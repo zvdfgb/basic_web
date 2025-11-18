@@ -1,9 +1,0 @@
-{% extends "users/base.html" %}
-{% block content %}
-    <h2>注册账号</h2>
-    <form method="POST">
-        {% csrf_token %}  <!-- 防跨站请求伪造 -->
-        {{ form.as_p }}  <!-- 渲染表单字段 -->
-        <button type="submit">注册</button>
-    </form>
-{% endblock %}
