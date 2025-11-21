@@ -7,4 +7,5 @@ app_name = 'mauth'
 urlpatterns = [
     path('login',views.login,name='login'),
     path('register',views.register,name='register'),
+    path('captcha',views.send_email_captcha,name='email_captcha'),
 ]

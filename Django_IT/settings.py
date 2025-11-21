@@ -79,8 +79,10 @@ WSGI_APPLICATION = 'Django_IT.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file':'my.cnf'
+        }
     }
 }
 
@@ -129,3 +131,14 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#发送邮箱有关设置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = '2727999431@qq.com'
+EMAIL_HOST_PASSWORD = 'mvkvvbluzzjtdfij'
+DEFAULT_FROM_EMAIL = '2727999431@qq.com'
+

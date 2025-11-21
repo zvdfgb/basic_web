@@ -1,21 +1,23 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
-    <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
-    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    {% block head %}{% endblock %}
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
+  <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
+  <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block head %}{% endblock %}
 </head>
+
 <body>
-<header class="p-3 text-bg-dark border-bottom mb-3">
+  <header class="p-3 text-bg-dark border-bottom mb-3">
     <div class="container">
       <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
         <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-            <img src="{% static 'image/logo.png' %}" alt="" height="80" width="80">
+          <img src="{% static 'image/logo.png' %}" alt="" height="80" width="80">
         </a>
 
         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
@@ -25,7 +27,8 @@
         </ul>
 
         <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-          <input type="search" class="form-control form-control-dark text-bg-success" placeholder="搜索..." aria-label="Search">
+          <input type="search" class="form-control form-control-dark text-bg-success" placeholder="搜索..."
+            aria-label="Search">
         </form>
 
         <div class="text-end">
@@ -35,8 +38,9 @@
       </div>
     </div>
   </header>
-<main class="container bg-white p-3 rounded">
+  <main class="container bg-white p-3 rounded">
     {% block main %}{% endblock %}
-</main>
+  </main>
 </body>
+
 </html>
