@@ -1,17 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>IT博客</title>
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
     <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
     <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    {% block head %}{% endblock %}
 </head>
-
 <body>
 <header class="p-3 text-bg-dark border-bottom mb-3">
     <div class="container">
@@ -27,33 +24,40 @@
             </ul>
 
             <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-                {% csrf_token %}
                 <input type="search" class="form-control form-control-dark text-bg-success" placeholder="搜索..."
                        aria-label="Search">
             </form>
-            {% if user.is_authenticated %}
-                <div class="dropdown text-end">
-                    <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
-                       aria-expanded="false">
-                        <img src="{% static 'image/logo.png' %}" alt="mdo" width="32" height="32" class="rounded-circle">
-                    </a>
-                    <ul class="dropdown-menu text-small" style="">
-                        <li><a class="dropdown-item" href="#">退出登录</a></li>
-                    </ul>
-                </div>
-            {% else %}
-                <div class="text-end">
-                    <a href="{% url 'mauth:login' %}" type="button" class="btn btn-outline-light me-2">登录</a>
-                    <a href="{% url 'mauth:register' %}" type="button" class="btn btn-warning">注册</a>
-                </div>
-            {% endif %}
 
+            <div class="text-end">
+                <button type="button" class="btn btn-outline-light me-2">登录</button>
+                <button type="button" class="btn btn-warning">注册</button>
+            </div>
         </div>
     </div>
 </header>
 <main class="container bg-white p-3 rounded">
-    {% block main %}{% endblock %}
+    <div style="max-width: 350px;" class="m-auto">
+        <h1>登录</h1>
+        <form action="" method="POST">
+            <div class="mb-3">
+                <label>邮箱</label>
+                <input type="email" name="email" class="form-control" placeholder="邮箱">
+            </div>
+            <div class="mb-3">
+                <label>密码</label>
+                <input type="password" name="password" class="form-control" placeholder="密码">
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox"name="remember" value="1" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                    记住我
+                </label>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-primary w-100">立即登录</button>
+            </div>
+        </form>
+    </div>
 </main>
 </body>
-
 </html>

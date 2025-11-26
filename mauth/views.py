@@ -7,15 +7,37 @@ import random
 from django.core.mail import send_mail
 from .models import Captcha
 from django.views.decorators.http import require_http_methods
-from .forms import RegisterForm
-from django.contrib.auth import get_user_model
+from .forms import RegisterForm,LoginForm
+from django.contrib.auth import get_user_model,login
 # Create your views here.
 
 User = get_user_model()
 
-def login(request):
-    return render(request,'login.html')
 
+@require_http_methods(['GET','POST'])
+def mlogin(request):
+    if request.method == 'GET':
+        return render(request,'login.html')
+    else:
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            remember = form.cleaned_data.get('remember')
+            user = User.objects.filter(email=email).first()
+            if user and user.check_password(password):
+                #登录
+                login(request,user)
+                #如果没有点击记住我，则会在浏览器过期后过期
+                if not remember:
+                    request.session.set_expiry(0)
+                #如果点击了，就什么也不做了，默认两周的过期时间
+                return redirect('/')
+            else:
+                print("邮箱或密码错误")
+                # form.add_error('email',"邮箱或密码错误")
+                # return render(request,'login.html',context={'form':form})
+                return redirect(reverse('mauth:login'))
 @require_http_methods(['GET','POST'])
 def register(request):
     if request.method == 'GET':

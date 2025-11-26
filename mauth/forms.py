@@ -22,7 +22,7 @@ class RegisterForm(forms.Form):
     password = forms.CharField(label='Password',max_length=20,min_length=6)
 
     def clean_email(self):
-        email = self.cleaned_data.get['email']
+        email = self.cleaned_data.get('email')
         exists = User.objects.filter(email=email).exists()
         if exists:
             raise forms.ValidationError('邮箱已经注册！')
@@ -30,9 +30,18 @@ class RegisterForm(forms.Form):
 
     def clean_captcha(self):
         captcha = self.cleaned_data.get('captcha')
-        email = self.cleaned_data.get['email']
+        email = self.cleaned_data.get('email')
         captcha_model = Captcha.objects.filter(email=email,captcha=captcha).first()
         if not captcha:
             raise forms.ValidationError("验证码与邮箱不匹配！")
         captcha_model.delete()
         return captcha
+
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(label='Email', error_messages={
+        'required': '请输入邮箱！',
+        'invalid': '请输入正确的邮箱！',
+    })
+    password = forms.CharField(label='Password', max_length=20, min_length=6)
+    remember = forms.IntegerField(required=False)

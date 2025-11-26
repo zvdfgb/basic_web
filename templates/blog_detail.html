@@ -21,6 +21,7 @@
     <div class="mt-2">
         <h3>评论（10）</h3>
         <form action="" method="post">
+            {% csrf_token %}
             <div class="mt-2">
                 <input type="text" class="form-control" placeholder="请输入评论">
             </div>

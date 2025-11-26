@@ -24,6 +24,7 @@
 	<h1>发布博客</h1>
     <div class="mt-3">
         <form action="" method="POST">
+            {% csrf_token %}
             <div class="mb-3">
                 <label class="form-label">标题</label>
                 <input type="text" name="title" class="form-control">
