@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from .models import Captcha
 from django.views.decorators.http import require_http_methods
 from .forms import RegisterForm,LoginForm
-from django.contrib.auth import get_user_model,login
+from django.contrib.auth import get_user_model,login,logout
 # Create your views here.
 
 User = get_user_model()
@@ -56,6 +56,11 @@ def register(request):
             return redirect(reverse('mauth:register'))
             # return render(request,'register.html',context={'form':form})
 
+def mlogout(request):
+    logout(request)
+    return redirect('/')
+
+
 def send_email_captcha(request):
     #?email=xxx的形式访问
     email=request.GET.get('email')
@@ -67,3 +72,5 @@ def send_email_captcha(request):
     Captcha.objects.update_or_create(email=email,defaults={'captcha':captcah}  )
     send_mail("博客注册验证码",message=f"您的注册验证码为：{captcah}",recipient_list=[email],from_email=None)
     return JsonResponse({"code":200,"message":"邮箱验证码发送成功！"})
+
+
