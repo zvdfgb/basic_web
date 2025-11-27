@@ -34,7 +34,6 @@ class RegisterForm(forms.Form):
         captcha_model = Captcha.objects.filter(email=email,captcha=captcha).first()
         if not captcha:
             raise forms.ValidationError("验证码与邮箱不匹配！")
-        captcha_model.delete()
         return captcha
 
 

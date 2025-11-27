@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('auth/', include('mauth.urls')),
+    path('blind-box/',include('blind_box.urls')),# 新增盲盒路由前缀
 ]

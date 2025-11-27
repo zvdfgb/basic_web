@@ -1,51 +1,121 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
-	blog_detail
+{{ blog.title }} - MyBlog
 {% endblock %}
 
 {% block main %}
-	<h1>Djando课程详情</h1>
-    <hr>
-    <div class="mt-2">
-        <img src="{% static 'image/logo.png' %}" class="rounded-circle" width="30" height="30" alt="">
-        <span class="ms-2">mmm</span>
-        <span class="ms-2"> 于 </span>
-        <span class="ms-2">2025年11月11日 11：11</span>发布
-    </div>
-    <hr>
-    <div class="py-2">
-        这是博客详情
-    </div>
-    <hr>
-    <div class="mt-2">
-        <h3>评论（10）</h3>
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="mt-2">
-                <input type="text" class="form-control" placeholder="请输入评论">
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Blog Post Card -->
+        <article class="card p-4 p-md-5 mb-5 animate-fade-up">
+            <header class="mb-4">
+                <h1 class="display-4 fw-bold mb-3 text-gradient">{{ blog.title }}</h1>
+
+                <div class="d-flex align-items-center text-muted">
+                    <div class="d-flex align-items-center me-4">
+                        <img src="{% static 'image/logo.png' %}"
+                            class="rounded-circle border border-2 border-white shadow-sm me-2" width="40" height="40"
+                            alt="{{ blog.author.username }}">
+                        <span class="fw-medium text-dark">{{ blog.author.username }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-calendar3 me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
+                            <path
+                                d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                        </svg>
+                        <span>{{ blog.pub_time|date:"Y年m月d日" }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <hr class="my-4 opacity-10">
+
+            <div class="blog-content fs-5 lh-lg text-secondary">
+                {{ blog.content|safe }}
             </div>
-            <div class="text-end mt-3" >
-                <button type="button" class="btn btn-primary">评论</button>
+        </article>
+
+        <!-- Comments Section -->
+        <div class="animate-fade-up delay-200">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h3 class="fw-bold m-0">
+                    评论 <span class="badge bg-primary-soft text-primary rounded-pill fs-6 align-middle ms-2">{{
+                        blog.comments.count }}</span>
+                </h3>
             </div>
-        </form>
-    </div>
-    <div class="mt-2">
-        <ul class="list-group">
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between text-body-secondary">
-                    <div class="user-info">
-                        <img src="{% static 'image/logo.png' %}" class="rounded-circle" width="40" height="40" alt="">
-                        <span class="ms-2">
-                            mmm
-                        </span>
-                        <div class="create-time" style="line-height: 40px">
-                            2025年11月11日 11：11
+
+            <!-- Comment Form -->
+            <div class="card p-4 mb-5 border-0 shadow-sm bg-white">
+                <form action="{% url 'blog:pub_comment' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="blog_id" value="{{ blog.id }}">
+                    <div class="mb-3">
+                        <textarea class="form-control" rows="3" placeholder="写下你的想法..." name="content"
+                            style="resize: none;"></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary-gradient px-4">
+                            <span class="me-1">🚀</span> 发布评论
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Comments List -->
+            <div class="comments-list">
+                {% for comment in blog.comments.all %}
+                <div class="card p-3 mb-3 border-0 shadow-sm animate-fade-up delay-300 hover-lift">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <img src="{% static 'image/logo.png' %}"
+                                class="rounded-circle border border-2 border-light shadow-sm" width="50" height="50"
+                                alt="{{ comment.author.username }}">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold mb-0 text-dark">{{ comment.author.username }}</h6>
+                                <small class="text-muted">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
+                            </div>
+                            <p class="mb-0 text-secondary">{{ comment.content }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="mt-2">这是评论的内容</div>
-            </li>
-        </ul>
+                {% empty %}
+                <div class="text-center py-5 text-muted">
+                    <p class="mb-0">还没有评论，来做第一个发言的人吧！✨</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+</div>
+
+<style>
+    /* Page specific styles */
+    .bg-primary-soft {
+        background-color: rgba(99, 102, 241, 0.1);
+        color: var(--primary-color);
+    }
+
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md) !important;
+    }
+
+    .blog-content img {
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        margin: 1rem 0;
+    }
+</style>
 {% endblock %}

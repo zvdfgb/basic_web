@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog',
     'mauth',
+    'blind_box',
 ]
 
 MIDDLEWARE = [
@@ -109,13 +110,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -132,13 +133,33 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CSRF 信任的源
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1',
+    'http://localhost',
+]
+
+# 登录URL配置
+LOGIN_URL = '/auth/login'
 
 #发送邮箱有关设置
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.qq.com'
-EMAIL_PORT = 587
 EMAIL_HOST_USER = '2727999431@qq.com'
-EMAIL_HOST_PASSWORD = 'mvkvvbluzzjtdfij'
 DEFAULT_FROM_EMAIL = '2727999431@qq.com'
+# settings.py
 
+
+# 🔴 关键修改 1：端口改为 465
+EMAIL_PORT = 465
+
+# 🔴 关键修改 2：开启 SSL，关闭 TLS
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+
+# ⚠️ 这里必须填QQ邮箱授权码，不能是QQ密码
+EMAIL_HOST_PASSWORD = 'mvkvvbluzzjtdfij'
+
+EMAIL_DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

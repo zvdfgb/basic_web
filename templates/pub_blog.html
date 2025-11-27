@@ -1,51 +1,66 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}pub_blog{% endblock %}
+{% block title %}发布博客 - MyBlog{% endblock %}
 
 {% block head %}
-	<link rel="stylesheet" href="{% static 'wangeditor/style.css'%}">
-    <script src="{% static 'wangeditor/index.js' %}"></script>
-    <script src="{% static 'js/pub_blog.js' %}"></script>
-    <style>
-      #editor—wrapper {
-        border: 1px solid #ccc;
-        z-index: 100; /* 按需定义 */
-      }
-      #toolbar-container {
-        border-bottom: 1px solid #ccc;
-      }
-      #editor-container {
-        height: 500px;
-      }
-    </style>
+<script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'wangeditor/style.css' %}">
+<script src="{% static 'wangeditor/index.js' %}"></script>
+<script src="{% static 'js/pub_blog.js' %}?v=3"></script>
+<style>
+    #editor—wrapper {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+    }
+
+    #toolbar-container {
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    #editor-container {
+        height: 400px;
+        padding: 1rem;
+    }
+</style>
 {% endblock %}
 
 {% block main %}
-	<h1>发布博客</h1>
-    <div class="mt-3">
-        <form action="" method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">标题</label>
-                <input type="text" name="title" class="form-control">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">分类</label>
-                <select name="category" class="form-select">
-                    <option value="1">Python</option>
-                    <option value="2">Django</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">内容</label>
-                <div id="editor—wrapper">
-                    <div id="toolbar-container"><!-- 工具栏 --></div>
-                    <div id="editor-container"><!-- 编辑器 --></div>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card p-4 p-md-5 animate-fade-up">
+            <h2 class="mb-4 fw-bold text-gradient">发布博客</h2>
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-medium">标题</label>
+                    <input type="text" name="title" class="form-control" placeholder="请输入博客标题">
                 </div>
-            </div>
-            <div class="mb-3 text-end">
-                <button class="btn btn-primary">发布</button>
-            </div>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label fw-medium">分类</label>
+                    <select name="category" class="form-select" id="category-select">
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-medium">内容</label>
+                    <div id="editor—wrapper">
+                        <div id="toolbar-container"><!-- 工具栏 --></div>
+                        <div id="editor-container"><!-- 编辑器 --></div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-primary-gradient px-5" id="submit-btn" type="button">
+                        <span class="me-1">🚀</span> 发布博客
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 {% endblock %}

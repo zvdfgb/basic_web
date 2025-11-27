@@ -1,59 +1,96 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+            rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
-    <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
-    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
     {% block head %}{% endblock %}
 </head>
 
 <body>
-<header class="p-3 text-bg-dark border-bottom mb-3">
+<!-- Background Gradients -->
+<div class="bg-gradient-1"></div>
+<div class="bg-gradient-2"></div>
+
+<header class="navbar-glass fixed-top">
     <div class="container">
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-                <img src="{% static 'image/logo.png' %}" alt="" height="80" width="80">
+        <div class="d-flex flex-wrap align-items-center justify-content-between py-3">
+            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-decoration-none logo-brand">
+                <img src="{% static 'image/logo.png' %}" alt="Logo" height="40" width="40"
+                     class="rounded-circle me-2">
+                <span class="fs-4 fw-bold text-gradient">MyBlog</span>
             </a>
 
-            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="/" class="nav-link px-2 text-secondary">首页</a></li>
-                <li><a href="{% url 'blog:blog_pub' %}" class="nav-link px-2 text-secondary">发布</a></li>
-                <li><a href="#" class="nav-link px-2 text-secondary">关于</a></li>
+            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ms-lg-4">
+                <li><a href="/" class="nav-link px-3 link-dark fw-medium">首页</a></li>
+                <li><a href="{% url 'blog:blog_pub' %}" class="nav-link px-3 link-dark fw-medium">发布</a></li>
+                <li>
+                    <a href="{% url 'blind_box:index' %}" class="nav-link px-3 link-dark fw-medium">
+                        🎁 盲盒
+                    </a>
+                </li>
             </ul>
 
-            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-                {% csrf_token %}
-                <input type="search" class="form-control form-control-dark text-bg-success" placeholder="搜索..."
-                       aria-label="Search">
-            </form>
-            {% if user.is_authenticated %}
-                <div class="dropdown text-end">
-                    <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
-                       aria-expanded="false">
-                        <img src="{% static 'image/logo.png' %}" alt="mdo" width="32" height="32" class="rounded-circle">
-                    </a>
-                    <ul class="dropdown-menu text-small" style="">
-                        <li><a class="dropdown-item" href="{% url 'mauth:logout' %}">退出登录</a></li>
-                    </ul>
-                </div>
-            {% else %}
-                <div class="text-end">
-                    <a href="{% url 'mauth:login' %}" type="button" class="btn btn-outline-light me-2">登录</a>
-                    <a href="{% url 'mauth:register' %}" type="button" class="btn btn-warning">注册</a>
-                </div>
-            {% endif %}
+            <div class="d-flex align-items-center">
+                <form class="me-3 position-relative d-none d-lg-block" role="search">
+                    {% csrf_token %}
+                    <input type="search" class="form-control form-control-pill" placeholder="搜索灵感..."
+                           aria-label="Search">
+                </form>
 
+                {% if user.is_authenticated %}
+                    <div class="dropdown text-end">
+                        <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle user-profile-link"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{% static 'image/logo.png' %}" alt="mdo" width="38" height="38"
+                                 class="rounded-circle border border-2 border-white shadow-sm">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
+                            <li><a class="dropdown-item py-2" href="#">个人中心</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item py-2 text-danger" href="{% url 'mauth:logout' %}">退出登录</a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="text-end">
+                        <a href="{% url 'mauth:login' %}" class="btn btn-ghost me-2">登录</a>
+                        <a href="{% url 'mauth:register' %}" class="btn btn-primary-gradient">注册</a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </header>
-<main class="container bg-white p-3 rounded">
+
+<main class="container main-content">
     {% block main %}{% endblock %}
 </main>
+
+<footer class="py-4 mt-5 text-center text-muted border-top glass-footer">
+    <small>&copy; 2025 MyBlog. Designed with ✨ by Antigravity.</small>
+</footer>
+
+<script src="{% static 'bootstrap5/popper.min.js' %}"></script>
+<script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
 </body>
 
 </html>

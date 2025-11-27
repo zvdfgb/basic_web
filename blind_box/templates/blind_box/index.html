@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}缘分盲盒 - MyBlog{% endblock %}
+
+{% block main %}
+<style>
+    /* 盲盒区域样式 */
+    .blind-box-container {
+        min-height: 70vh; /* 占据大部分屏幕高度 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* 盒子本体样式 */
+    .mystery-box {
+        font-size: 8rem; /* 盒子大小 */
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        user-select: none;
+        margin: 20px 0;
+    }
+
+    /* 鼠标悬停效果 */
+    .mystery-box:hover {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* 点击时的抖动动画 */
+    .shake-hard {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite;
+    }
+
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-5deg); }
+        20%, 80% { transform: translate3d(4px, 0, 0) rotate(5deg); }
+        30%, 50%, 70% { transform: translate3d(-8px, 0, 0) rotate(-10deg); }
+        40%, 60% { transform: translate3d(8px, 0, 0) rotate(10deg); }
+    }
+
+    .status-text {
+        font-size: 1.2rem;
+        color: #6c757d;
+        height: 30px; /* 占位防止跳动 */
+        font-weight: 500;
+    }
+</style>
+
+<div class="blind-box-container">
+    <h1 class="display-4 fw-bold text-gradient mb-3">🔮 缘分盲盒</h1>
+    <p class="lead text-muted mb-5">点击下方的宝箱，随机连接一位有趣的灵魂。</p>
+
+    <!-- 盲盒本体 -->
+    <div id="blindBox" class="mystery-box">🎁</div>
+
+    <!-- 状态提示文字 -->
+    <div id="statusText" class="status-text">点击宝箱开始匹配</div>
+
+    <!-- 隐藏的CSRF Token，用于AJAX -->
+    {% csrf_token %}
+</div>
+
+<!-- 引入 jQuery (如果你的 base.html 没引入的话) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        let isDrawing = false; // 防止重复点击
+
+        $("#blindBox").click(function() {
+            if (isDrawing) return; // 如果正在抽奖，直接返回
+            isDrawing = true;
+
+            const $box = $(this);
+            const $status = $("#statusText");
+            const csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+            // 1. 开始动画
+            $box.addClass("shake-hard");
+            $status.text("🔍 正在茫茫人海中寻找有缘人...");
+            $status.addClass("text-primary");
+
+            // 2. 模拟一点延迟感（1.5秒），让动画播一会儿，增加紧张感
+            setTimeout(function() {
+                // 3. 发送真实请求
+                $.ajax({
+                    url: "{% url 'blind_box:draw' %}",
+                    type: "POST",
+                    headers: { "X-CSRFToken": csrfToken }, // 关键：带上 Token
+                    success: function(res) {
+                        if (res.code === 200) {
+                            $status.text("🎉 匹配成功！正在跳转...");
+                            $box.text("🎊"); // 变成开箱图标
+
+                            // 4. 这里的 target_id 就是后端传回来的用户ID
+                            let targetId = res.data.target_id;
+
+                            // 5. 延迟 0.5秒 跳转，让用户看到匹配成功的提示
+                            setTimeout(function(){
+                                window.location.href = "/blind-box/chat/" + targetId + "/";
+                            }, 500);
+
+                        } else {
+                            // 处理错误（比如只有自己一个人）
+                            stopAnimation(res.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        stopAnimation("❌ 服务器开小差了，请稍后重试");
+                        console.error(xhr.responseText);
+                    }
+                });
+            }, 1500);
+        });
+
+        function stopAnimation(msg) {
+            $("#blindBox").removeClass("shake-hard");
+            $("#statusText").text(msg).removeClass("text-primary").addClass("text-danger");
+            isDrawing = false;
+        }
+    });
+</script>
+{% endblock %}

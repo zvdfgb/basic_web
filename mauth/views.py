@@ -38,6 +38,9 @@ def mlogin(request):
                 # form.add_error('email',"邮箱或密码错误")
                 # return render(request,'login.html',context={'form':form})
                 return redirect(reverse('mauth:login'))
+        return None
+
+
 @require_http_methods(['GET','POST'])
 def register(request):
     if request.method == 'GET':
