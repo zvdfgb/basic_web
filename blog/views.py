@@ -8,7 +8,8 @@ from .forms import PubBlogForm
 # Create your views here.
 
 def index(request):
-    return render(request, 'index.html')
+    blogs = Blog.objects.all().order_by('-pub_time')
+    return render(request, 'index.html', context={'blogs': blogs})
 
 
 
@@ -18,7 +19,7 @@ def blog_detail(request,blog_id):
         blog = Blog.objects.get(pk=blog_id)
     except Exception as e:
         blog = None
-    return render(request, 'blog_detail.html',context={'blog':blog,blog_id:'blog_id'})
+    return render(request, 'blog_detail.html',context={'blog':blog,'blog_id':blog_id})
 
 
 

@@ -5,6 +5,61 @@
 {{ blog.title }} - MyBlog
 {% endblock %}
 
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+    /* Markdown Styles */
+    .blog-content h1,
+    .blog-content h2,
+    .blog-content h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .blog-content p {
+        margin-bottom: 1rem;
+    }
+
+    .blog-content pre {
+        background: #0d1117;
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .blog-content code {
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9em;
+    }
+
+    .blog-content blockquote {
+        border-left: 4px solid #6366f1;
+        padding-left: 1rem;
+        color: #4a5568;
+        font-style: italic;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .blog-content ul,
+    .blog-content ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .blog-content img {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
 {% block main %}
 <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -15,10 +70,17 @@
 
                 <div class="d-flex align-items-center text-muted">
                     <div class="d-flex align-items-center me-4">
+                        {% if blog.author.profile.avatar %}
+                        <img src="{{ blog.author.profile.avatar.url }}"
+                            class="rounded-circle border border-2 border-white shadow-sm me-2" width="40" height="40"
+                            alt="{{ blog.author.profile.nickname|default:blog.author.username }}"
+                            style="object-fit: cover;">
+                        {% else %}
                         <img src="{% static 'image/logo.png' %}"
                             class="rounded-circle border border-2 border-white shadow-sm me-2" width="40" height="40"
                             alt="{{ blog.author.username }}">
-                        <span class="fw-medium text-dark">{{ blog.author.username }}</span>
+                        {% endif %}
+                        <span class="fw-medium text-dark">{{ blog.author.profile.nickname|default:blog.author.username}}</span>
                     </div>
                     <div class="d-flex align-items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -35,8 +97,12 @@
 
             <hr class="my-4 opacity-10">
 
-            <div class="blog-content fs-5 lh-lg text-secondary">
-                {{ blog.content|safe }}
+            <!-- Hidden textarea to hold raw markdown -->
+            <textarea id="raw-markdown" style="display: none;">{{ blog.content }}</textarea>
+
+            <!-- Container for rendered HTML -->
+            <div class="blog-content fs-5 lh-lg text-secondary" id="blog-content-display">
+                <!-- Content will be rendered here by JS -->
             </div>
         </article>
 
@@ -44,8 +110,7 @@
         <div class="animate-fade-up delay-200">
             <div class="d-flex align-items-center justify-content-between mb-4">
                 <h3 class="fw-bold m-0">
-                    评论 <span class="badge bg-primary-soft text-primary rounded-pill fs-6 align-middle ms-2">{{
-                        blog.comments.count }}</span>
+                    评论 <span class="badge bg-primary-soft text-primary rounded-pill fs-6 align-middle ms-2">{{blog.comments.count }}</span>
                 </h3>
             </div>
 
@@ -72,13 +137,20 @@
                 <div class="card p-3 mb-3 border-0 shadow-sm animate-fade-up delay-300 hover-lift">
                     <div class="d-flex">
                         <div class="flex-shrink-0">
+                            {% if comment.author.profile.avatar %}
+                            <img src="{{ comment.author.profile.avatar.url }}"
+                                class="rounded-circle border border-2 border-light shadow-sm" width="50" height="50"
+                                alt="{{ comment.author.profile.nickname|default:comment.author.username }}"
+                                style="object-fit: cover;">
+                            {% else %}
                             <img src="{% static 'image/logo.png' %}"
                                 class="rounded-circle border border-2 border-light shadow-sm" width="50" height="50"
                                 alt="{{ comment.author.username }}">
+                            {% endif %}
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark">{{ comment.author.username }}</h6>
+                                <h6 class="fw-bold mb-0 text-dark">{{comment.author.profile.nickname|default:comment.author.username }}</h6>
                                 <small class="text-muted">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
                             </div>
                             <p class="mb-0 text-secondary">{{ comment.content }}</p>
@@ -95,6 +167,26 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rawMarkdown = document.getElementById('raw-markdown').value;
+        const displayDiv = document.getElementById('blog-content-display');
+
+        // Configure marked options
+        marked.setOptions({
+            highlight: function (code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-',
+            breaks: true,
+            gfm: true
+        });
+
+        displayDiv.innerHTML = marked.parse(rawMarkdown);
+    });
+</script>
+
 <style>
     /* Page specific styles */
     .bg-primary-soft {
@@ -109,13 +201,6 @@
     .hover-lift:hover {
         transform: translateY(-3px);
         box-shadow: var(--shadow-md) !important;
-    }
-
-    .blog-content img {
-        max-width: 100%;
-        border-radius: 12px;
-        box-shadow: var(--shadow-md);
-        margin: 1rem 0;
     }
 </style>
 {% endblock %}

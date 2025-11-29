@@ -5,25 +5,28 @@
 
 {% block head %}
 <script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
-<link rel="stylesheet" href="{% static 'wangeditor/style.css' %}">
-<script src="{% static 'wangeditor/index.js' %}"></script>
-<script src="{% static 'js/pub_blog.js' %}?v=3"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script src="{% static 'js/pub_blog.js' %}?v=4"></script>
 <style>
-    #editor—wrapper {
-        border: 1px solid #e2e8f0;
+    /* EasyMDE Customization */
+    .EasyMDEContainer .CodeMirror {
         border-radius: 12px;
-        overflow: hidden;
-        background: white;
+        border: 1px solid #e2e8f0;
+        box-shadow: none;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
     }
 
-    #toolbar-container {
-        border-bottom: 1px solid #e2e8f0;
+    .editor-toolbar {
+        border-radius: 12px 12px 0 0;
+        border: 1px solid #e2e8f0;
+        border-bottom: none;
         background: #f8fafc;
     }
 
-    #editor-container {
-        height: 400px;
-        padding: 1rem;
+    .editor-statusbar {
+        display: none;
     }
 </style>
 {% endblock %}
@@ -48,11 +51,8 @@
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label fw-medium">内容</label>
-                    <div id="editor—wrapper">
-                        <div id="toolbar-container"><!-- 工具栏 --></div>
-                        <div id="editor-container"><!-- 编辑器 --></div>
-                    </div>
+                    <label class="form-label fw-medium">内容 (Markdown)</label>
+                    <textarea id="markdown-editor" name="content"></textarea>
                 </div>
                 <div class="text-end">
                     <button class="btn btn-primary-gradient px-5" id="submit-btn" type="button">

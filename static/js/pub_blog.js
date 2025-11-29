@@ -1,41 +1,20 @@
 $(function () {
     console.log("✅ pub_blog.js loaded and ready");
 
-    // 检查 wangEditor 是否加载
-    if (!window.wangEditor) {
-        console.error("❌ wangEditor not loaded!");
-        alert("编辑器加载失败，请刷新页面");
-        return;
-    }
-
-    const { createEditor, createToolbar } = window.wangEditor
-
-    const editorConfig = {
-        placeholder: 'Type here...',
-        onChange(editor) {
-            const html = editor.getHtml()
-            console.log('editor content', html)
-            // 也可以同步到 <textarea>
+    // Initialize EasyMDE
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('markdown-editor'),
+        placeholder: "在此处编写您的博客内容 (支持 Markdown)...",
+        spellChecker: false,
+        status: false,
+        autosave: {
+            enabled: true,
+            uniqueId: "pub_blog_content",
+            delay: 1000,
         },
-    }
+    });
 
-    const editor = createEditor({
-        selector: '#editor-container',
-        html: '<p><br></p>',
-        config: editorConfig,
-        mode: 'default', // or 'simple'
-    })
-
-    const toolbarConfig = {}
-
-    const toolbar = createToolbar({
-        editor,
-        selector: '#toolbar-container',
-        config: toolbarConfig,
-        mode: 'default', // or 'simple'
-    })
-
-    console.log("✅ Editor initialized");
+    console.log("✅ EasyMDE initialized");
 
     $("#submit-btn").click(function (event) {
         console.log("🔵 Submit button clicked");
@@ -44,8 +23,13 @@ $(function () {
 
         let title = $("input[name='title']").val();
         let category = $("#category-select").val();
-        let content = editor.getHtml();
+        let content = easyMDE.value(); // Get content from EasyMDE
         let csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+
+        if (!title || !content) {
+            alert("标题和内容不能为空！");
+            return;
+        }
 
         console.log("📤 Sending AJAX request with data:", { title, category });
 
@@ -55,6 +39,9 @@ $(function () {
             success: function (result) {
                 console.log("✅ AJAX Success response:", result);
                 if (result['code'] === 200) {
+                    // Clear autosave
+                    easyMDE.clearAutosavedValue();
+
                     //跳转到博客详情
                     let blog_id = result['data']['blog_id'];
                     let targetUrl = "/blog/detail/" + blog_id;

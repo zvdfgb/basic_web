@@ -9,11 +9,13 @@
     .chat-card {
         border: none;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.85); /* 玻璃拟态背景 */
+        background: rgba(255, 255, 255, 0.85);
+        /* 玻璃拟态背景 */
         backdrop-filter: blur(10px);
-        height: 80vh; /* 固定高度 */
+        height: 80vh;
+        /* 固定高度 */
         display: flex;
         flex-direction: column;
         margin-top: 80px;
@@ -23,7 +25,7 @@
     .chat-header {
         background: rgba(255, 255, 255, 0.9);
         padding: 15px 20px;
-        border-bottom: 0px solid rgba(0,0,0,0.05);
+        border-bottom: 0px solid rgba(0, 0, 0, 0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -32,8 +34,10 @@
 
     /* 聊天内容区域 */
     .chat-body {
-        flex: 1; /* 占据剩余空间 */
-        overflow-y: auto; /* 允许滚动 */
+        flex: 1;
+        /* 占据剩余空间 */
+        overflow-y: auto;
+        /* 允许滚动 */
         padding: 20px;
         background-color: #f9f9f9;
         scroll-behavior: smooth;
@@ -58,21 +62,32 @@
         font-weight: bold;
         font-size: 18px;
         flex-shrink: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     /* 对方的消息 */
-    .message-row.theirs .avatar { margin-right: 12px; }
+    .message-row.theirs .avatar {
+        margin-right: 12px;
+    }
+
     .message-row.theirs .bubble {
         background: #ffffff;
         color: #333;
         border-radius: 18px 18px 18px 2px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
     /* 我的消息 */
-    .message-row.mine { flex-direction: row-reverse; }
-    .message-row.mine .avatar { margin-left: 12px; display: none; /* 自己通常不看自己头像，可选择显示 */ }
+    .message-row.mine {
+        flex-direction: row-reverse;
+    }
+
+    .message-row.mine .avatar {
+        margin-left: 12px;
+        display: none;
+        /* 自己通常不看自己头像，可选择显示 */
+    }
+
     .message-row.mine .bubble {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -97,13 +112,16 @@
         display: block;
         opacity: 0.8;
     }
-    .mine .message-time { color: rgba(255,255,255,0.8); }
+
+    .mine .message-time {
+        color: rgba(255, 255, 255, 0.8);
+    }
 
     /* 底部输入框区域 */
     .chat-footer {
         padding: 15px 20px;
         background: white;
-        border-top: 1px solid rgba(0,0,0,0.05);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .input-group-custom {
@@ -115,6 +133,7 @@
         border: 1px solid transparent;
         transition: 0.3s;
     }
+
     .input-group-custom:focus-within {
         background: white;
         border-color: #764ba2;
@@ -126,10 +145,12 @@
         background: transparent;
         box-shadow: none;
         padding: 10px;
-        resize: none; /* 禁止拖动大小 */
+        resize: none;
+        /* 禁止拖动大小 */
         height: 45px;
         max-height: 100px;
     }
+
     .form-control-chat:focus {
         background: transparent;
         box-shadow: none;
@@ -148,9 +169,18 @@
         transition: 0.2s;
         margin-left: 5px;
     }
-    .btn-send:hover { background: #5e3a85; transform: scale(1.05); }
-    .btn-send svg { width: 18px; height: 18px; fill: white; margin-left: 2px; }
 
+    .btn-send:hover {
+        background: #5e3a85;
+        transform: scale(1.05);
+    }
+
+    .btn-send svg {
+        width: 18px;
+        height: 18px;
+        fill: white;
+        margin-left: 2px;
+    }
 </style>
 
 <div class="row justify-content-center ">
@@ -160,9 +190,11 @@
             <!-- 头部：显示对方信息 -->
             <div class="chat-header">
                 <div class="d-flex align-items-center">
-                    <div class="avatar" style="background: #e9ecef; color: #555;">
-                        {{ target_user.username|slice:":1"|upper }}
-                    </div>
+                    <a href="{% url 'mauth:profile_view' target_user.id %}" class="text-decoration-none">
+                        <div class="avatar" style="background: #e9ecef; color: #555;">
+                            {{ target_user.username|slice:":1"|upper }}
+                        </div>
+                    </a>
                     <div class="ms-3">
                         <h5 class="mb-0 fw-bold">{{ target_user.username }}</h5>
                         <small class="text-success">● 在线</small>
@@ -176,29 +208,31 @@
             <!-- 中间：消息列表 -->
             <div class="chat-body" id="chatContainer">
                 {% for msg in messages %}
-                    {% if msg.sender == request.user %}
-                        <!-- 我的消息 -->
-                        <div class="message-row mine">
-                            <div class="bubble">
-                                {{ msg.content }}
-                                <span class="message-time">{{ msg.created_at|date:"H:i" }}</span>
-                            </div>
-                        </div>
-                    {% else %}
-                        <!-- 对方的消息 -->
-                        <div class="message-row theirs">
-                            <div class="avatar">{{ target_user.username|slice:":1"|upper }}</div>
-                            <div class="bubble">
-                                {{ msg.content }}
-                                <span class="message-time">{{ msg.created_at|date:"H:i" }}</span>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% empty %}
-                    <div class="text-center text-muted mt-5 empty-tip">
-                        <p>🎉 匹配成功！</p>
-                        <p>快打个招呼，开启一段缘分吧~</p>
+                {% if msg.sender == request.user %}
+                <!-- 我的消息 -->
+                <div class="message-row mine">
+                    <div class="bubble">
+                        {{ msg.content }}
+                        <span class="message-time">{{ msg.created_at|date:"H:i" }}</span>
                     </div>
+                </div>
+                {% else %}
+                <!-- 对方的消息 -->
+                <div class="message-row theirs">
+                    <a href="{% url 'mauth:profile_view' target_user.id %}">
+                        <div class="avatar">{{ target_user.username|slice:":1"|upper }}</div>
+                    </a>
+                    <div class="bubble">
+                        {{ msg.content }}
+                        <span class="message-time">{{ msg.created_at|date:"H:i" }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                {% empty %}
+                <div class="text-center text-muted mt-5 empty-tip">
+                    <p>🎉 匹配成功！</p>
+                    <p>快打个招呼，开启一段缘分吧~</p>
+                </div>
                 {% endfor %}
             </div>
 
@@ -207,10 +241,13 @@
                 <form id="chatForm">
                     {% csrf_token %}
                     <div class="input-group-custom">
-                        <input type="text" id="msgInput" name="content" class="form-control form-control-chat" placeholder="输入消息..." autocomplete="off">
+                        <input type="text" id="msgInput" name="content" class="form-control form-control-chat"
+                            placeholder="输入消息..." autocomplete="off">
                         <button type="submit" class="btn-send">
                             <!-- 发送图标SVG -->
-                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
                         </button>
                     </div>
                 </form>
@@ -221,7 +258,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         const $container = $("#chatContainer");
         const $input = $("#msgInput");
 
@@ -234,7 +271,7 @@
         scrollToBottom();
 
         // 2. 监听表单提交 (AJAX 发送)
-        $("#chatForm").submit(function(e) {
+        $("#chatForm").submit(function (e) {
             e.preventDefault(); // 阻止页面刷新
 
             let content = $input.val().trim();
@@ -247,9 +284,10 @@
                 type: "POST",
                 data: {
                     'content': content,
-                    'csrfmiddlewaretoken': csrfToken
+                    'csrfmiddlewaretoken': csrfToken,
+                    'receiver_id': "{{ target_user.id }}", // 添加这一行
                 },
-                success: function(res) {
+                success: function (res) {
                     if (res.code === 200) {
                         // 移除空状态提示
                         $(".empty-tip").remove();
@@ -274,8 +312,9 @@
                         alert(res.message);
                     }
                 },
-                error: function() {
-                    alert("发送失败，网络错误");
+                error: function (xhr, status, error) {
+                    alert("发送失败: " + (xhr.responseJSON ? xhr.responseJSON.message : error));
+                    console.log(xhr.responseText); // 在控制台查看详细错误
                 }
             });
         });

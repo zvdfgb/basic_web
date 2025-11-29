@@ -1,6 +1,6 @@
 from email.policy import default
 
-from django.shortcuts import render,redirect,reverse
+from django.shortcuts import render,redirect,reverse,get_object_or_404
 from django.http.response import JsonResponse
 import string
 import random
@@ -75,5 +75,37 @@ def send_email_captcha(request):
     Captcha.objects.update_or_create(email=email,defaults={'captcha':captcah}  )
     send_mail("博客注册验证码",message=f"您的注册验证码为：{captcah}",recipient_list=[email],from_email=None)
     return JsonResponse({"code":200,"message":"邮箱验证码发送成功！"})
+
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileForm
+from .models import Profile
+
+
+@login_required
+def profile_view(request, user_id=None):
+    if user_id:
+        target_user = get_object_or_404(User, pk=user_id)
+        is_own_profile = (request.user == target_user)
+    else:
+        target_user = request.user
+        is_own_profile = True
+    
+    # Ensure profile exists (for old users)
+    if not hasattr(target_user, 'profile'):
+        Profile.objects.create(user=target_user)
+    
+    if request.method == 'POST' and is_own_profile:
+        form = ProfileForm(request.POST, request.FILES, instance=target_user.profile)
+        if form.is_valid():
+            form.save()
+            return redirect('mauth:profile')
+    else:
+        form = ProfileForm(instance=target_user.profile)
+    
+    return render(request, 'profile.html', {
+        'form': form, 
+        'is_own_profile': is_own_profile,
+        'target_user': target_user
+    })
 
 
