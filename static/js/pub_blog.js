@@ -16,6 +16,31 @@ $(function () {
 
     console.log("✅ EasyMDE initialized");
 
+    // Handle file upload
+    $("#markdown-upload").change(function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Check file extension
+        if (!file.name.endsWith('.md')) {
+            alert('请上传 .md 格式的文件');
+            this.value = ''; // Clear input
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const content = e.target.result;
+            easyMDE.value(content);
+            console.log("📄 Markdown file loaded");
+        };
+        reader.onerror = function (e) {
+            console.error("❌ Error reading file:", e);
+            alert('读取文件失败');
+        };
+        reader.readAsText(file);
+    });
+
     $("#submit-btn").click(function (event) {
         console.log("🔵 Submit button clicked");
         //阻止按钮的默认行为
@@ -25,17 +50,29 @@ $(function () {
         let category = $("#category-select").val();
         let content = easyMDE.value(); // Get content from EasyMDE
         let csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+        let cover = $("input[name='cover']")[0].files[0];
 
         if (!title || !content) {
             alert("标题和内容不能为空！");
             return;
         }
 
-        console.log("📤 Sending AJAX request with data:", { title, category });
+        let formData = new FormData();
+        formData.append("title", title);
+        formData.append("category", category);
+        formData.append("content", content);
+        formData.append("csrfmiddlewaretoken", csrfmiddlewaretoken);
+        if (cover) {
+            formData.append("cover", cover);
+        }
+
+        console.log("📤 Sending AJAX request with data:", { title, category, cover });
 
         $.ajax('/blog/pub', {
             method: 'POST',
-            data: { title, category, content, csrfmiddlewaretoken },
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (result) {
                 console.log("✅ AJAX Success response:", result);
                 if (result['code'] === 200) {

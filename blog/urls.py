@@ -8,4 +8,5 @@ urlpatterns = [
     path('blog/detail/<int:blog_id>',views.blog_detail,name='blog_detail'),
     path('blog/pub',views.pub_blog,name='blog_pub'),
     path('blog/commment/pub',views.pub_comment,name='pub_comment'),
+    path('search',views.search,name='search'),
 ]

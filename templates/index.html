@@ -4,138 +4,90 @@
 {% block title %}首页 - MyBlog{% endblock %}
 
 {% block main %}
-    <!-- Hero Section -->
-    <div class="hero-section mb-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h1 class="display-3 fw-bold mb-3 animate-fade-up">
-                    欢迎来到 <span class="text-gradient">MyBlog</span>
-                </h1>
-                <p class="lead text-secondary mb-4 animate-fade-up delay-100">
-                    分享技术、记录生活、探索未知 ✨
+<!-- Hero Section -->
+<div class="hero-section mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h1 class="display-3 fw-bold mb-3 animate-fade-up">
+                欢迎来到 <span class="text-gradient">MyBlog</span>
+            </h1>
+            <p class="lead text-secondary mb-4 animate-fade-up delay-100">
+                分享技术、记录生活、探索未知 ✨
+            </p>
+            <div class="animate-fade-up delay-200">
+                <a href="{% url 'blog:blog_pub' %}" class="btn btn-primary-gradient btn-lg px-5 me-3">
+                    <span class="me-2">✍️</span> 开始创作
+                </a>
+                <a href="#blogs" class="btn btn-ghost btn-lg px-5">
+                    <span class="me-2">📚</span> 浏览博客
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blog Cards Grid -->
+<div id="blogs" class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold m-0">最新博客</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for blog in blogs %}
+            <div class="col-md-6 col-lg-4">
+                <article class="card blog-card h-100 animate-fade-up hover-lift">
+                    <div class="blog-card-image">
+                        {% if blog.cover %}
+                        <img src="{{ blog.cover.url }}?v=1" alt="Blog Cover" class="w-100 h-100"
+                            style="object-fit: cover;">
+                        {% else %}
+                        <img src="{% static 'image/blog_default.png' %}?v=1" alt="Blog Cover" class="w-100 h-100"
+                            style="object-fit: cover;">
+                        {% endif %}
+                        <span
+                            class="badge bg-primary category-badge position-absolute top-0 start-0 m-3">{{blog.category.name}}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">
+                            <a href="{% url 'blog:blog_detail' blog.id %}"
+                                class="text-decoration-none text-dark stretched-link">{{ blog.title }}</a>
+                        </h5>
+                        <p class="card-text text-secondary mb-3 text-line-clamp-3">{{ blog.content|striptags }}</p>
+                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                            <div class="d-flex align-items-center">
+                                {% if blog.author.profile.avatar %}
+                                <img src="{{ blog.author.profile.avatar.url }}" class="rounded-circle me-2" width="28"
+                                    height="28" alt="{{ blog.author.profile.nickname|default:blog.author.username }}"
+                                    style="object-fit: cover;">
+                                {% else %}
+                                <img src="{% static 'image/avatar_default.png' %}" class="rounded-circle me-2"
+                                    width="28" height="28" alt="{{ blog.author.username }}">
+                                {% endif %}
+                                <span
+                                    class="fw-medium">{{blog.author.profile.nickname|default:blog.author.username}}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                    class="bi bi-clock me-1" viewBox="0 0 16 16">
+                                    <path
+                                        d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                                </svg>
+                                <span>{{ blog.pub_time|timesince }}前</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">还没有博客文章，快去<a href="{% url 'blog:blog_pub' %}">发布</a>第一篇吧！
                 </p>
-                <div class="animate-fade-up delay-200">
-                    <a href="{% url 'blog:blog_pub' %}" class="btn btn-primary-gradient btn-lg px-5 me-3">
-                        <span class="me-2">✍️</span> 开始创作
-                    </a>
-                    <a href="#blogs" class="btn btn-ghost btn-lg px-5">
-                        <span class="me-2">📚</span> 浏览博客
-                    </a>
-                </div>
             </div>
+            {% endfor %}
         </div>
     </div>
+</div>
 
-    <!-- Blog Cards Grid -->
-    <div id="blogs" class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold m-0">最新博客</h2>
-            </div>
-
-            <div class="row g-4">
-                {% for blog in blogs %}
-                    <div class="col-md-6 col-lg-4">
-                        <article class="card blog-card h-100 animate-fade-up hover-lift">
-                            <div class="blog-card-image">
-                                <img src="{% static 'image/blog_default.png' %}" alt="Blog Cover" class="w-100">
-                                <span class="badge bg-primary position-absolute top-0 start-0 m-3">{{ blog.category.name}}</span>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold mb-3">
-                                    <a href="{% url 'blog:blog_detail' blog.id %}"
-                                       class="text-decoration-none text-dark stretched-link">{{ blog.title }}</a>
-                                </h5>
-                                <p class="card-text text-secondary mb-3">{{ blog.content|striptags|truncatewords:20 }}</p>
-                                <div class="d-flex justify-content-between align-items-center text-muted small">
-                                    <div class="d-flex align-items-center">
-                                        {% if blog.author.profile.avatar %}
-                                            <img src="{{ blog.author.profile.avatar.url }}" class="rounded-circle me-2"
-                                                 width="28"
-                                                 height="28"
-                                                 alt="{{ blog.author.profile.nickname|default:blog.author.username }}"
-                                                 style="object-fit: cover;">
-                                        {% else %}
-                                            <img src="{% static 'image/avatar_default.png' %}"
-                                                 class="rounded-circle me-2"
-                                                 width="28" height="28" alt="{{ blog.author.username }}">
-                                        {% endif %}
-                                        <span class="fw-medium">{{ blog.author.profile.nickname|default:blog.author.username}}</span>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                             fill="currentColor"
-                                             class="bi bi-clock me-1" viewBox="0 0 16 16">
-                                            <path
-                                                    d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                                        </svg>
-                                        <span>{{ blog.pub_time|timesince }}前</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                {% empty %}
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted">还没有博客文章，快去<a href="{% url 'blog:blog_pub' %}">发布</a>第一篇吧！
-                        </p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <style>
-        /* Hero Section */
-        .hero-section {
-            padding: 3rem 0;
-            position: relative;
-        }
-
-        /* Blog Card Enhancements */
-        .blog-card {
-            overflow: hidden;
-            border: none;
-        }
-
-        .blog-card-image {
-            position: relative;
-            overflow: hidden;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .blog-card-image img {
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-
-        .blog-card:hover .blog-card-image img {
-            transform: scale(1.1);
-        }
-
-        .blog-card .stretched-link:hover {
-            color: var(--primary-color) !important;
-        }
-
-        /* Button Enhancements */
-        .btn-lg {
-            padding: 0.75rem 2rem;
-            font-size: 1.1rem;
-        }
-
-        /* Filter Buttons */
-        .btn-outline-secondary {
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-secondary:hover {
-            background: var(--primary-gradient);
-            border-color: transparent;
-            color: white;
-        }
-    </style>
 {% endblock %}

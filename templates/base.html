@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v={% now 'U' %}">
 
     {% block head %}{% endblock %}
 </head>
@@ -32,27 +32,34 @@
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-between py-3">
                 <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-decoration-none logo-brand">
-                    <img src="{% static 'image/logo.png' %}" alt="Logo" height="40" width="40"
+                    <img src="{% static 'image/logo.png' %}" alt="Logo" height="55" width="55"
                         class="rounded-circle me-2">
                     <span class="fs-4 fw-bold text-gradient">MyBlog</span>
                 </a>
 
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ms-lg-4">
-                    <li><a href="/" class="nav-link px-3 link-dark fw-medium">首页</a></li>
-                    <li><a href="{% url 'blog:blog_pub' %}" class="nav-link px-3 link-dark fw-medium">发布</a></li>
+                    <li><a href="/" class="nav-link px-3 link-dark fw-medium">🏠 首页</a></li>
+                    <li><a href="{% url 'blog:blog_pub' %}" class="nav-link px-3 link-dark fw-medium">✍️ 发布</a></li>
                     <li>
                         <a href="{% url 'blind_box:index' %}" class="nav-link px-3 link-dark fw-medium">
                             🎁 盲盒
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'mauth:friend_list' %}" class="nav-link px-3 link-dark fw-medium">
+                            👥 好友
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center">
-                    <form class="me-3 position-relative d-none d-lg-block" role="search">
+                    <form class="me-3 position-relative d-none d-lg-block" role="search"
+                        action="{% url 'blog:search' %}" method="GET">
                         {% csrf_token %}
                         <input type="search" class="form-control form-control-pill" placeholder="搜索灵感..."
-                            aria-label="Search">
+                            aria-label="Search" name="q">
                     </form>
+
 
                     {% if user.is_authenticated %}
                     <div class="dropdown text-end">

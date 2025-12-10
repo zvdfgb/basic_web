@@ -43,6 +43,10 @@
                     <input type="text" name="title" class="form-control" placeholder="请输入博客标题">
                 </div>
                 <div class="mb-4">
+                    <label class="form-label fw-medium">博客封面</label>
+                    <input type="file" name="cover" class="form-control" accept="image/*">
+                </div>
+                <div class="mb-4">
                     <label class="form-label fw-medium">分类</label>
                     <select name="category" class="form-select" id="category-select">
                         {% for category in categories %}
@@ -52,6 +56,10 @@
                 </div>
                 <div class="mb-4">
                     <label class="form-label fw-medium">内容 (Markdown)</label>
+                    <div class="mb-2">
+                        <input class="form-control" type="file" id="markdown-upload" accept=".md">
+                        <div class="form-text">或者上传本地 Markdown 文件</div>
+                    </div>
                     <textarea id="markdown-editor" name="content"></textarea>
                 </div>
                 <div class="text-end">

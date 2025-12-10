@@ -109,3 +109,120 @@ def profile_view(request, user_id=None):
     })
 
 
+from .models import FriendRequest, Message
+from django.db.models import Q
+
+@login_required
+def send_friend_request(request, user_id):
+    to_user = get_object_or_404(User, pk=user_id)
+    if request.user == to_user:
+        return JsonResponse({'status': 'error', 'message': 'Cannot send request to yourself'})
+    
+    if FriendRequest.objects.filter(from_user=request.user, to_user=to_user).exists():
+        return JsonResponse({'status': 'error', 'message': 'Request already sent'})
+    
+    if request.user.profile.friends.filter(pk=user_id).exists():
+        return JsonResponse({'status': 'error', 'message': 'Already friends'})
+
+    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
+    return JsonResponse({'status': 'success', 'message': 'Friend request sent'})
+
+@login_required
+def accept_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendRequest, pk=request_id, to_user=request.user)
+    if friend_request.status != 'pending':
+        return JsonResponse({'status': 'error', 'message': 'Request already processed'})
+    
+    friend_request.status = 'accepted'
+    friend_request.save()
+    
+    # Add to friends list for both users
+    request.user.profile.friends.add(friend_request.from_user.profile)
+    friend_request.from_user.profile.friends.add(request.user.profile)
+    
+    return JsonResponse({'status': 'success', 'message': 'Friend request accepted'})
+
+@login_required
+def reject_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendRequest, pk=request_id, to_user=request.user)
+    if friend_request.status != 'pending':
+        return JsonResponse({'status': 'error', 'message': 'Request already processed'})
+    
+    friend_request.status = 'rejected'
+    friend_request.save()
+    return JsonResponse({'status': 'success', 'message': 'Friend request rejected'})
+
+@login_required
+def friend_list(request):
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+    friends = request.user.profile.friends.all()
+    received_requests = FriendRequest.objects.filter(to_user=request.user, status='pending')
+    sent_requests = FriendRequest.objects.filter(from_user=request.user, status='pending')
+    
+    # Get all users except self and already friends
+    # We need to filter out users who are already friends
+    friend_users = [f.user.id for f in friends]
+    all_users = User.objects.exclude(pk=request.user.pk).exclude(pk__in=friend_users)
+    
+    recommended_user = None
+    if not friends.exists() and all_users.exists():
+        count = all_users.count()
+        if count > 0:
+            random_index = random.randint(0, count - 1)
+            recommended_user = all_users[random_index]
+    
+    return render(request, 'mauth/friend_list.html', {
+        'friends': friends,
+        'received_requests': received_requests,
+        'sent_requests': sent_requests,
+        'all_users': all_users,
+        'recommended_user': recommended_user
+    })
+
+
+@login_required
+def chat_view(request, user_id):
+    friend = get_object_or_404(User, pk=user_id)
+    # Check if they are friends
+    if not request.user.profile.friends.filter(user=friend).exists():
+        return redirect('mauth:friend_list')
+        
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(sender=request.user, receiver=friend, content=content)
+            return JsonResponse({'status': 'success'})
+            
+    messages = Message.objects.filter(
+        Q(sender=request.user, receiver=friend) | 
+        Q(sender=friend, receiver=request.user)
+    ).order_by('timestamp')
+    
+    return render(request, 'mauth/chat.html', {
+        'friend': friend,
+        'messages': messages
+    })
+
+@login_required
+def get_messages(request, user_id):
+    friend = get_object_or_404(User, pk=user_id)
+    messages = Message.objects.filter(
+        Q(sender=request.user, receiver=friend) | 
+        Q(sender=friend, receiver=request.user)
+    ).order_by('timestamp')
+    
+    # Mark received messages as read
+    Message.objects.filter(sender=friend, receiver=request.user, is_read=False).update(is_read=True)
+    
+    messages_data = [{
+        'sender': msg.sender.username,
+        'content': msg.content,
+        'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+        'is_self': msg.sender == request.user
+    } for msg in messages]
+    
+    return JsonResponse({'messages': messages_data})
+
+
+
