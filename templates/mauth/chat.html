@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat with {{ friend.profile.nickname|default:friend.username }} - Django IT{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="height: calc(100vh - 100px);">
+    <div class="card shadow-sm h-100">
+        <div class="card-header bg-white py-3 d-flex align-items-center">
+            <a href="{% url 'mauth:friend_list' %}" class="btn btn-light btn-sm rounded-circle me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <img src="{{ friend.profile.avatar.url }}" class="rounded-circle me-3" width="40" height="40">
+            <div>
+                <h5 class="mb-0">{{ friend.profile.nickname|default:friend.username }}</h5>
+                <small class="text-success"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Online</small>
+            </div>
+        </div>
+
+        <div class="card-body overflow-auto bg-light" id="chat-messages" style="height: 0;">
+            {% for msg in messages %}
+            <div class="d-flex mb-3 {% if msg.sender == request.user %}justify-content-end{% endif %}">
+                {% if msg.sender != request.user %}
+                <img src="{{ friend.profile.avatar.url }}" class="rounded-circle me-2 align-self-end" width="30"
+                    height="30">
+                {% endif %}
+
+                <div class="card border-0 shadow-sm {% if msg.sender == request.user %}bg-primary text-white{% else %}bg-white{% endif %}"
+                    style="max-width: 70%; border-radius: 15px;">
+                    <div class="card-body py-2 px-3">
+                        <p class="mb-0">{{ msg.content }}</p>
+                        <small class="{% if msg.sender == request.user %}text-white-50{% else %}text-muted{% endif %}"
+                            style="font-size: 0.7rem;">
+                            {{ msg.timestamp|date:"H:i" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card-footer bg-white py-3">
+            <form id="chat-form" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="content" class="form-control rounded-pill bg-light border-0"
+                    placeholder="Type a message..." required autocomplete="off">
+                <button type="submit" class="btn btn-primary rounded-circle" style="width: 45px; height: 45px;">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const friendId = {{ friend.id }};
+
+    // Scroll to bottom
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    scrollToBottom();
+
+    // Send message
+    chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch(location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    this.reset();
+                    fetchMessages();
+                }
+            });
+    });
+
+    // Poll for new messages
+    function fetchMessages() {
+        fetch(`/auth/chat/get_messages/${friendId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const currentScroll = chatMessages.scrollTop + chatMessages.clientHeight;
+                const isNearBottom = chatMessages.scrollHeight - currentScroll < 100;
+
+                chatMessages.innerHTML = data.messages.map(msg => `
+                <div class="d-flex mb-3 ${msg.is_self ? 'justify-content-end' : ''}">
+                    ${!msg.is_self ? `<img src="{{ friend.profile.avatar.url }}" class="rounded-circle me-2 align-self-end" width="30" height="30">` : ''}
+                    <div class="card border-0 shadow-sm ${msg.is_self ? 'bg-primary text-white' : 'bg-white'}" style="max-width: 70%; border-radius: 15px;">
+                        <div class="card-body py-2 px-3">
+                            <p class="mb-0">${msg.content}</p>
+                            <small class="${msg.is_self ? 'text-white-50' : 'text-muted'}" style="font-size: 0.7rem;">
+                                ${msg.timestamp.split(' ')[1].substring(0, 5)}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+                if (isNearBottom) {
+                    scrollToBottom();
+                }
+            });
+    }
+
+    setInterval(fetchMessages, 3000);
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}个人中心 - MyBlog{% endblock %}
+
+{% block main %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 mt-5">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4 fw-bold text-gradient">
+                    {% if is_own_profile %}个人中心{% else %}{{ target_user.username }} 的主页{% endif %}
+                </h2>
+
+                <div class="text-center mb-4">
+                    {% if target_user.profile.avatar %}
+                    <img src="{{ target_user.profile.avatar.url }}" alt="Avatar"
+                        class="rounded-circle shadow-sm border border-3 border-white"
+                        style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <img src="{% static 'image/logo.png' %}" alt="Default Avatar"
+                        class="rounded-circle shadow-sm border border-3 border-white"
+                        style="width: 120px; height: 120px; object-fit: cover;">
+                    {% endif %}
+                </div>
+
+                <form method="post" enctype="multipart/form-data" id="profileForm">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">头像</label>
+                        {{ form.avatar }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">昵称</label>
+                        {{ form.nickname }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">邮箱</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">年龄</label>
+                            {{ form.age }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">性别</label>
+                            {{ form.gender }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">地区</label>
+                        {{ form.region }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">个性签名</label>
+                        {{ form.signature }}
+                    </div>
+
+                    {% if is_own_profile %}
+                    <div class="d-grid gap-2">
+                        <button type="button" id="modifyBtn" class="btn btn-primary-gradient btn-lg">修改信息</button>
+                        <button type="submit" id="saveBtn" class="btn btn-success btn-lg d-none">保存修改</button>
+                        <a href="/" class="btn btn-ghost btn-lg">返回首页</a>
+                    </div>
+                    {% else %}
+                    <div class="d-grid gap-2">
+                        <button type="button" onclick="sendFriendRequest({{ target_user.id }}, this)"
+                            class="btn btn-primary-gradient btn-lg">
+                            <i class="bi bi-person-plus"></i> 添加好友
+                        </button>
+                        <a href="/" class="btn btn-ghost btn-lg">返回首页</a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('profileForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        const modifyBtn = document.getElementById('modifyBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Disable all inputs initially
+        inputs.forEach(input => input.disabled = true);
+
+        if (modifyBtn) {
+            modifyBtn.addEventListener('click', function () {
+                inputs.forEach(input => input.disabled = false);
+                modifyBtn.classList.add('d-none');
+                saveBtn.classList.remove('d-none');
+            });
+        }
+    });
+
+    function sendFriendRequest(userId, btn) {
+        fetch(`/auth/friend/add/${userId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    btn.innerHTML = '<i class="bi bi-check"></i> 已发送申请';
+                    btn.classList.replace('btn-primary-gradient', 'btn-success');
+                    btn.disabled = true;
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+</script>
+{% endblock %}
