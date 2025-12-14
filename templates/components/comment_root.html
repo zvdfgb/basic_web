@@ -15,7 +15,18 @@
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <h6 class="fw-bold mb-0 text-dark">
                     {{comment.author.profile.nickname|default:comment.author.username }}</h6>
-                <small class="text-muted">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
+                <div class="d-flex align-items-center">
+                    <small class="text-muted me-3">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
+
+                    <!-- Like Button -->
+                    <span
+                        class="d-inline-flex align-items-center cursor-pointer {% if request.user in comment.likes.all %}text-primary{% else %}text-muted{% endif %}"
+                        onclick="likeComment('{{ comment.id }}', this)" style="cursor: pointer; transition: all 0.2s;">
+                        <i
+                            class="bi {% if request.user in comment.likes.all %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %} me-1"></i>
+                        <small class="like-count">{{ comment.likes.count }}</small>
+                    </span>
+                </div>
             </div>
             <p class="mb-2 text-secondary">{{ comment.content }}</p>
 
@@ -39,10 +50,15 @@
                     {% csrf_token %}
                     <input type="hidden" name="blog_id" value="{{ blog.id }}">
                     <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                    <div class="mb-2">
-                        <textarea class="form-control form-control-sm" rows="2"
+                    <div class="mb-2 position-relative">
+                        <textarea class="form-control form-control-sm pe-5" rows="2"
                             placeholder="回复 @{{ comment.author.profile.nickname|default:comment.author.username }}..."
-                            name="content" style="resize: none;"></textarea>
+                            name="content" id="reply-input-{{ comment.id }}" style="resize: none;"></textarea>
+                        <button type="button"
+                            class="btn btn-link text-decoration-none position-absolute bottom-0 end-0 mb-2 me-2 text-muted p-0"
+                            onclick="toggleEmoji(event, 'reply-input-{{ comment.id }}')">
+                            <i class="bi bi-emoji-smile"></i>
+                        </button>
                     </div>
                     <div class="text-end">
                         <button type="submit" class="btn btn-sm btn-primary-gradient">发布回复</button>

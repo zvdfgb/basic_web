@@ -17,7 +17,18 @@
                 <span class="text-muted fw-normal">回复</span>
                 {{ comment.parent.author.profile.nickname|default:comment.parent.author.username }}
             </h6>
-            <small class="text-muted smaller">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
+            <div class="d-flex align-items-center">
+                <small class="text-muted smaller me-2">{{ comment.pub_time|date:"m月d日 H:i" }}</small>
+
+                <!-- Like Button -->
+                <span
+                    class="d-inline-flex align-items-center cursor-pointer {% if request.user in comment.likes.all %}text-primary{% else %}text-muted{% endif %}"
+                    onclick="likeComment('{{ comment.id }}', this)" style="cursor: pointer; transition: all 0.2s;">
+                    <i class="bi {% if request.user in comment.likes.all %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %} me-1"
+                        style="font-size: 0.8rem;"></i>
+                    <small class="like-count smaller">{{ comment.likes.count }}</small>
+                </span>
+            </div>
         </div>
         <p class="mb-0 text-secondary small">{{ comment.content }}</p>
     </div>

@@ -16,6 +16,64 @@ $(function () {
 
     console.log("✅ EasyMDE initialized");
 
+    // Emoji Picker Logic
+    const emojiBtn = document.createElement('button');
+    emojiBtn.className = 'emoji-btn';
+    emojiBtn.type = 'button';
+    emojiBtn.innerHTML = '<i class="bi bi-emoji-smile"></i>';
+    emojiBtn.title = 'Insert Emoji';
+    // Style to match EasyMDE toolbar
+    emojiBtn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:16px;padding:0 10px;color:#2c3e50;outline:none;line-height:1.5;';
+
+    // Add hover effect
+    emojiBtn.onmouseover = () => emojiBtn.style.color = '#3b82f6';
+    emojiBtn.onmouseout = () => emojiBtn.style.color = '#2c3e50';
+
+    const toolbar = document.querySelector('.editor-toolbar');
+    if (toolbar) {
+        toolbar.appendChild(emojiBtn);
+    }
+
+    const emojiPopup = document.getElementById('emoji-popup');
+    if (emojiPopup) {
+        document.body.appendChild(emojiPopup);
+    }
+    const picker = document.querySelector('emoji-picker');
+
+    if (emojiBtn && emojiPopup && picker) {
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (emojiPopup.style.display === 'block') {
+                emojiPopup.style.display = 'none';
+            } else {
+                const rect = emojiBtn.getBoundingClientRect();
+                emojiPopup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+                // Adjust if flows off screen
+                let left = window.scrollX + rect.left;
+                if (left + 350 > window.innerWidth) {
+                    left = window.innerWidth - 360;
+                }
+                emojiPopup.style.left = left + 'px';
+                emojiPopup.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!emojiPopup.contains(e.target) && e.target !== emojiBtn) {
+                emojiPopup.style.display = 'none';
+            }
+        });
+
+        picker.addEventListener('emoji-click', event => {
+            const emoji = event.detail.unicode;
+            const doc = easyMDE.codemirror.getDoc();
+            const cursor = doc.getCursor();
+            doc.replaceRange(emoji, cursor);
+            emojiPopup.style.display = 'none';
+            easyMDE.codemirror.focus();
+        });
+    }
+
     // Handle file upload
     $("#markdown-upload").change(function (e) {
         const file = e.target.files[0];
@@ -51,6 +109,7 @@ $(function () {
         let content = easyMDE.value(); // Get content from EasyMDE
         let csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
         let cover = $("input[name='cover']")[0].files[0];
+        let tags = $("#tags").val();
 
         if (!title || !content) {
             alert("标题和内容不能为空！");
@@ -61,12 +120,13 @@ $(function () {
         formData.append("title", title);
         formData.append("category", category);
         formData.append("content", content);
+        formData.append("tags", tags);
         formData.append("csrfmiddlewaretoken", csrfmiddlewaretoken);
         if (cover) {
             formData.append("cover", cover);
         }
 
-        console.log("📤 Sending AJAX request with data:", { title, category, cover });
+        console.log("📤 Sending AJAX request with data:", { title, category, cover, tags });
 
         $.ajax('/blog/pub', {
             method: 'POST',

@@ -27,9 +27,28 @@
                 <form method="post" enctype="multipart/form-data" id="profileForm">
                     {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">头像</label>
-                        {{ form.avatar }}
+                    <div class="mb-3" id="avatar-upload-section">
+                        <div class="text-center">
+                            <label class="form-label fw-medium d-block mb-3">头像</label>
+                            <div class="d-inline-flex align-items-center justify-content-center">
+                                <!-- Current Avatar Display / Preview -->
+                                <img src="{{ target_user.profile.avatar.url }}" alt="当前头像"
+                                     class="rounded-circle shadow-sm me-3 border border-2 border-primary" id="avatar-preview"
+                                     style="width: 80px; height: 80px; object-fit: cover;">
+
+                                <!-- Hidden File Input -->
+                                <input type="file" name="{{ form.avatar.name }}" id="{{ form.avatar.id_for_label }}"
+                                       class="d-none" accept="image/*" {{ form.avatar.field.required|yesno:"required," }}>
+
+                                <!-- Custom Button to Trigger File Input -->
+                                <label for="{{ form.avatar.id_for_label }}" class="btn btn-outline-primary-gradient rounded-pill px-4" id="upload-button">
+                                    <i class="bi bi-upload me-2"></i> 选择新头像
+                                </label>
+                            </div>
+                            {% if form.avatar.errors %}
+                                <div class="text-danger small mt-1">{{ form.avatar.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -57,6 +76,14 @@
                         <label class="form-label fw-medium">地区</label>
                         {{ form.region }}
                     </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.is_public }}
+                            <label class="form-check-label fw-medium" for="{{ form.is_public.id_for_label }}">公开个人主页</label>
+                            <div class="form-text small text-muted">关闭后，只有好友和自己可见。</div>
+                        </div>
+                    </div>
 
                     <div class="mb-4">
                         <label class="form-label fw-medium">个性签名</label>
@@ -71,10 +98,34 @@
                     </div>
                     {% else %}
                     <div class="d-grid gap-2">
-                        <button type="button" onclick="sendFriendRequest({{ target_user.id }}, this)"
-                            class="btn btn-primary-gradient btn-lg">
-                            <i class="bi bi-person-plus"></i> 添加好友
-                        </button>
+                        {% if are_friends %}
+                            <button type="button" class="btn btn-success btn-lg disabled">
+                                <i class="bi bi-check-circle"></i> 已经是好友了
+                            </button>
+                            <a href="{% url 'mauth:chat' target_user.id %}" class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-chat-dots"></i> 发送消息
+                            </a>
+                        {% elif sent_request_pending %}
+                            <button type="button" class="btn btn-secondary btn-lg disabled">
+                                <i class="bi bi-hourglass"></i> 好友申请已发送
+                            </button>
+                        {% elif received_request_pending %}
+                            <div class="btn-group w-100" role="group" data-request-id="{{ received_request_id }}">
+                                <button type="button" onclick="acceptFriendRequest('{{ target_user.id }}', this)"
+                                    class="btn btn-success btn-lg">
+                                    <i class="bi bi-person-check"></i> 接受
+                                </button>
+                                <button type="button" onclick="rejectFriendRequest('{{ target_user.id }}', this)"
+                                    class="btn btn-danger btn-lg">
+                                    <i class="bi bi-person-dash"></i> 拒绝
+                                </button>
+                            </div>
+                        {% else %}
+                            <button type="button" onclick="sendFriendRequest({{ target_user.id }}, this)"
+                                class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-person-plus"></i> 添加好友
+                            </button>
+                        {% endif %}
                         <a href="/" class="btn btn-ghost btn-lg">返回首页</a>
                     </div>
                     {% endif %}
@@ -84,21 +135,78 @@
     </div>
 </div>
 
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-8 col-lg-6">
+        <h3 class="mb-4 fw-bold">
+            {% if is_own_profile %}我的博客{% else %}TA的博客{% endif %}
+        </h3>
+        {% if blogs %}
+        <div class="list-group shadow-sm rounded-3">
+            {% for blog in blogs %}
+            <a href="{% url 'blog:blog_detail' blog.id %}" class="list-group-item bg-white p-4 border-0 border-bottom mb-3 rounded-3 shadow-sm hover-lift text-decoration-none text-dark">
+                <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0 text-truncate fw-bold">
+                            {{ blog.title }}
+                    </h5>
+                    <small class="text-muted">{{ blog.pub_time|date:"Y-m-d" }}</small>
+                </div>
+                <p class="mb-2 text-secondary text-truncate" style="max-width: 100%;">
+                    {{blog.content|striptags|truncatechars:100 }}</p>
+
+                {% if is_own_profile or request.user.is_superuser %}
+                <div class="text-end">
+                    <button onclick="event.preventDefault(); event.stopPropagation(); deleteBlog('{{ blog.id }}')"
+                        class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                        <i class="bi bi-trash"></i> 删除
+                    </button>
+                </div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm">
+            <p class="mb-0">暂无发布的博客</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('profileForm');
-        const inputs = form.querySelectorAll('input, select, textarea');
+        const inputs = form.querySelectorAll('input, select, textarea:not(#id_avatar)'); // Exclude new custom avatar input
         const modifyBtn = document.getElementById('modifyBtn');
         const saveBtn = document.getElementById('saveBtn');
+        const avatarInput = document.getElementById('id_avatar');
+        const uploadButton = document.getElementById('upload-button');
+        const avatarPreview = document.getElementById('avatar-preview');
 
         // Disable all inputs initially
         inputs.forEach(input => input.disabled = true);
+        if (avatarInput) avatarInput.disabled = true; // Disable the custom input too
+        if (uploadButton) uploadButton.classList.add('disabled'); // Visually disable the label
 
         if (modifyBtn) {
             modifyBtn.addEventListener('click', function () {
                 inputs.forEach(input => input.disabled = false);
+                if (avatarInput) avatarInput.disabled = false; // Enable custom input
+                if (uploadButton) uploadButton.classList.remove('disabled'); // Enable custom button
                 modifyBtn.classList.add('d-none');
                 saveBtn.classList.remove('d-none');
+            });
+        }
+
+        // Avatar preview functionality
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        avatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
             });
         }
     });
@@ -108,13 +216,99 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    btn.innerHTML = '<i class="bi bi-check"></i> 已发送申请';
-                    btn.classList.replace('btn-primary-gradient', 'btn-success');
+                    btn.innerHTML = '<i class="bi bi-hourglass"></i> 好友申请已发送';
+                    btn.classList.replace('btn-primary-gradient', 'btn-secondary');
                     btn.disabled = true;
                 } else {
                     alert(data.message);
                 }
             });
+    }
+
+    // Function to find the friend request ID based on user IDs
+    // This is a simplified approach. In a real app, you might pass the request_id directly
+    // or fetch it. For now, we'll assume the target_user.id is sufficient to infer the request.
+    // However, the backend expects request_id. I need to make a helper function in views or adjust.
+    // Let's modify the view to include the request_id if a pending request exists.
+    // This is a common pattern: pass minimal data to template.
+    // Let me check mauth/urls.py. Yes, it's accept_friend_request/<int:request_id>/
+    // I need the request_id.
+
+    // I need to modify views.py again to pass received_request_id if it exists.
+    // Let me write the functions assuming request_id is passed, and then I'll fix the view.
+    
+    function handleFriendRequest(userId, action, btnGroup) {
+        // Need to get the actual request ID from somewhere
+        // For now, I'll assume `received_request_id` is available in the template if a pending request exists
+        // (This will require another views.py modification)
+        // If I cannot get the request_id from template, I will need to make another AJAX call to get it.
+        // For now, let's assume it's passed.
+        const requestId = btnGroup.dataset.requestId; // Assuming the button group has a data-request-id attribute
+
+        fetch(`/auth/friend/${action}/${requestId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (action === 'accept') {
+                        btnGroup.innerHTML = `
+                            <button type="button" class="btn btn-success btn-lg disabled">
+                                <i class="bi bi-check-circle"></i> 已经是好友了
+                            </button>
+                            <a href="{% url 'mauth:chat' target_user.id %}" class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-chat-dots"></i> 发送消息
+                            </a>
+                        `;
+                    } else { // reject
+                        btnGroup.innerHTML = `
+                            <button type="button" onclick="sendFriendRequest({{ target_user.id }}, this)"
+                                class="btn btn-primary-gradient btn-lg">
+                                <i class="bi bi-person-plus"></i> 添加好友
+                            </button>
+                        `;
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('操作失败');
+            });
+    }
+
+    function acceptFriendRequest(userId, btn) {
+        const btnGroup = btn.closest('.btn-group');
+        handleFriendRequest(userId, 'accept', btnGroup);
+    }
+
+    function rejectFriendRequest(userId, btn) {
+        const btnGroup = btn.closest('.btn-group');
+        handleFriendRequest(userId, 'reject', btnGroup);
+    }
+
+    function deleteBlog(blogId) {
+        if (confirm('确定要删除这篇博客吗？此操作不可恢复。')) {
+            fetch(`/blog/delete/${blogId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        alert('删除成功');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || '删除失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('发生错误，请重试');
+                });
+        }
     }
 </script>
 {% endblock %}

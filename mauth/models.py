@@ -30,6 +30,7 @@ class Profile(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='S', verbose_name='性别')
     region = models.CharField(max_length=100, blank=True, null=True, verbose_name='地区')
     friends = models.ManyToManyField('self', blank=True, symmetrical=True)
+    is_public = models.BooleanField(default=True, verbose_name='是否公开个人主页')
 
 
     def __str__(self):

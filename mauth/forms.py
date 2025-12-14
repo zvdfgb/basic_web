@@ -21,7 +21,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['avatar', 'nickname', 'signature', 'age', 'gender', 'region']
+        fields = ['avatar', 'nickname', 'signature', 'age', 'gender', 'region', 'is_public']
         widgets = {
             'nickname': forms.TextInput(attrs={'class': 'form-control'}),
             'signature': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -29,6 +29,7 @@ class ProfileForm(forms.ModelForm):
             'age': forms.NumberInput(attrs={'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-select'}),
             'region': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):

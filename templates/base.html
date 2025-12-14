@@ -16,6 +16,7 @@
 
     <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}?v={% now 'U' %}">
@@ -24,6 +25,11 @@
 </head>
 
 <body>
+    <!-- Scroll Progress -->
+    <div id="scroll-progress"></div>
+    <!-- Film Grain Overlay -->
+    <div class="film-grain"></div>
+
     <!-- Background Gradients -->
     <div class="bg-gradient-1"></div>
     <div class="bg-gradient-2"></div>
@@ -31,12 +37,11 @@
     <header class="navbar-glass fixed-top">
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-between py-3">
-                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-decoration-none logo-brand">
-                    <img src="{% static 'image/logo.png' %}" alt="Logo" height="55" width="55"
-                        class="rounded-circle me-2">
-                    <span class="fs-4 fw-bold text-gradient">MyBlog</span>
-                </a>
-
+                                <a href="/" class="d-flex flex-wrap align-items-center mb-2 mb-lg-0 text-decoration-none logo-brand">
+                                    <img src="{% static 'image/logo.png' %}" alt="Logo" height="65" width="65"
+                                        class="rounded-circle me-2">
+                                    <span class="fs-4 fw-bold text-gradient">MyBlog</span>
+                                </a>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ms-lg-4">
                     <li><a href="/" class="nav-link px-3 link-dark fw-medium">🏠 首页</a></li>
                     <li><a href="{% url 'blog:blog_pub' %}" class="nav-link px-3 link-dark fw-medium">✍️ 发布</a></li>
@@ -98,12 +103,14 @@
         {% block main %}{% endblock %}
     </main>
 
-    <footer class="py-4 mt-5 text-center text-muted border-top glass-footer">
-        <small>&copy; 2025 MyBlog. Designed with ✨ by Antigravity.</small>
-    </footer>
-
     <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
     <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+    <!-- Smooth Scroll (Lenis) -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <!-- Custom Interactions (Cursor, Tilt, Scroll) -->
+    <script src="{% static 'js/interactions.js' %}"></script>
+    <!-- Particle Effect -->
+    <script src="{% static 'js/particles.js' %}"></script>
 </body>
 
 </html>

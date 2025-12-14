@@ -94,6 +94,33 @@ def profile_view(request, user_id=None):
     if not hasattr(target_user, 'profile'):
         Profile.objects.create(user=target_user)
     
+    are_friends = False
+    sent_request_pending = False
+    received_request_pending = False  # Initialize it here
+    received_request_id = None
+    if not is_own_profile:
+        # Check if they are already friends
+        are_friends = request.user.profile.friends.filter(user=target_user).exists()
+        
+        # Check if a request has been sent by current user to target user
+        sent_request_pending = FriendRequest.objects.filter(
+            from_user=request.user, to_user=target_user, status='pending'
+        ).exists()
+
+        # Check if a request has been sent by target user to current user
+        received_request = FriendRequest.objects.filter(
+            from_user=target_user, to_user=request.user, status='pending'
+        ).first()
+        if received_request:
+            received_request_pending = True
+            received_request_id = received_request.id
+
+    # Visibility Check
+    if not is_own_profile and not target_user.profile.is_public:
+        # If not public, allow only friends
+        if not are_friends:
+             return render(request, 'profile_private.html', {'target_user': target_user})
+
     if request.method == 'POST' and is_own_profile:
         form = ProfileForm(request.POST, request.FILES, instance=target_user.profile)
         if form.is_valid():
@@ -102,10 +129,17 @@ def profile_view(request, user_id=None):
     else:
         form = ProfileForm(instance=target_user.profile)
     
+    blogs = target_user.blog_set.all().order_by('-pub_time')
+
     return render(request, 'profile.html', {
         'form': form, 
         'is_own_profile': is_own_profile,
-        'target_user': target_user
+        'target_user': target_user,
+        'blogs': blogs,
+        'are_friends': are_friends,
+        'sent_request_pending': sent_request_pending,
+        'received_request_pending': received_request_pending,
+        'received_request_id': received_request_id,
     })
 
 
@@ -199,9 +233,13 @@ def chat_view(request, user_id):
         Q(sender=friend, receiver=request.user)
     ).order_by('timestamp')
     
+    # Get all friends for the sidebar
+    friends = request.user.profile.friends.all()
+    
     return render(request, 'mauth/chat.html', {
         'friend': friend,
-        'messages': messages
+        'messages': messages,
+        'friends': friends  # Added friends list
     })
 
 @login_required
