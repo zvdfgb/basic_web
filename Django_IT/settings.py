@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-7ig5_=a40695a&-95k!-m26m#)xm$=2t%aujib159c!88^2r_1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+# 允许服务器的内网 IP 访问
+ALLOWED_HOSTS = ['100.68.140.69', '127.0.0.1', 'localhost']#部署服务器
 
 # Application definition
 
